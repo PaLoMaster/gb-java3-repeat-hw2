@@ -89,7 +89,7 @@ public class ClientHandler {
                     fromClientMessage = parts[1];
                 }
             } else {
-                fromClientMessage = ChatHelper.LOGOUT_COMMAND;
+                fromClientMessage = ChatHelper.COMMAND_LOGOUT;
             }
             if (ChatHelper.isLogoutCommand(fromClientMessage)) {
                 closeConnection();
@@ -97,6 +97,23 @@ public class ClientHandler {
             }
             if (toClientNick != null) {
                 myServer.sendMessageToClient(this, fromClientMessage, toClientNick);
+            } else if (ChatHelper.isChangeNickCommand(fromClientMessage)) {
+                String[] parts = ChatHelper.getPartsIfChangeNickCommand(fromClientMessage);
+                boolean updateNick = false;
+                if (parts != null) {
+                    String oldNick = getNick();
+                    String newNick = parts[0];
+                    if (updateNick = myServer.getAuthService().changeNick(client.getLogin(), newNick)) {
+                        client.setNick(newNick);
+                        myServer.sendMessageToClients(this,
+                                "Клиент " + oldNick + " поменял ник на " + getNick());
+                        sendMessageToClient(ChatHelper.getAuthorizedStatus(getNick()));
+                        myServer.broadcastClientsList();
+                    }
+                }
+                if (parts == null || !updateNick) {
+                    sendMessageToClient("Не удалось изменить ник.");
+                }
             } else {
                 myServer.sendMessageToClients(this, fromClientMessage);
             }

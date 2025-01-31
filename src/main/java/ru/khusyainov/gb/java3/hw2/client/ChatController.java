@@ -90,11 +90,15 @@ public class ChatController implements Initializable {
                     }
                     while (!Thread.interrupted() && fromServerIn.hasNextLine()) {
                         fromServerMessage = fromServerIn.nextLine();
+                        String newNick = ChatHelper.getNickIfAuthorizedStatus(fromServerMessage);
                         String[] clientsList = ChatHelper.getClientsIfClientsList(fromServerMessage);
-                        if (clientsList == null) {
+                        if (newNick != null) {
+                            nick = newNick;
                             history.appendText(fromServerMessage + "\n");
-                        } else {
+                        } else if (clientsList != null) {
                             Platform.runLater(() -> this.clientsList.setAll(clientsList));
+                        } else {
+                            history.appendText(fromServerMessage + "\n");
                         }
                     }
                 } catch (Exception e) {

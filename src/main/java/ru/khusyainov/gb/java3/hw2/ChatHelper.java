@@ -11,21 +11,23 @@ public class ChatHelper {
     private static final String NICK_REGEX = "\\b[a-zA-Zа-яА-я0-9!#$%&'()*+,-.:?@^_`]{5,32}\\b";
     private static final String PASSWORD_REGEX = "\\b[a-zA-Zа-яА-я0-9!#$%&'()*+,-.:?@^_`]{5,64}\\b";
     private static final String MESSAGE_REGEX = ".+";
-    private static final String LOGIN_COMMAND = "/auth";
+    private static final String COMMAND_LOGIN = "/auth";
     private static final String AUTHORIZATION_NOT_FULL = "Логин и/или пароль не заполнен(ы)!";
     private static final String AUTHORIZATION_NOT_SENT = "Логин/пароль не отправлены!";
     private static final String LOGIN_COMMAND_REGEX =
-            "^" + LOGIN_COMMAND + SPACE_REGEX + LOGIN_REGEX + SPACE_REGEX + PASSWORD_REGEX;
-    private static final String AUTHORIZED_STATUS = LOGIN_COMMAND + "ok";
+            "^" + COMMAND_LOGIN + SPACE_REGEX + LOGIN_REGEX + SPACE_REGEX + PASSWORD_REGEX;
+    private static final String AUTHORIZED_STATUS = COMMAND_LOGIN + "ok";
     private static final String AUTHORIZED_STATUS_REGEX = AUTHORIZED_STATUS + SPACE_REGEX + NICK_REGEX;
-    private static final String CLIENTS_LIST = "/clients";
-    private static final String CLIENTS_LIST_REGEX = CLIENTS_LIST + SPACE_REGEX + NICK_REGEX +
+    private static final String COMMAND_CLIENTS_LIST = "/clients";
+    private static final String CLIENTS_LIST_REGEX = COMMAND_CLIENTS_LIST + SPACE_REGEX + NICK_REGEX +
             "(" + SPACE_REGEX + NICK_REGEX + ")*";
-    private static final String PRIVATE_MESSAGE_PREFIX = "/w ";
+    private static final String COMMAND_PRIVATE_MESSAGE = "/w ";
     private static final String PRIVATE_MESSAGE_REGEX =
-            "^" + PRIVATE_MESSAGE_PREFIX + NICK_REGEX + SPACE_REGEX + MESSAGE_REGEX;
+            "^" + COMMAND_PRIVATE_MESSAGE + NICK_REGEX + SPACE_REGEX + MESSAGE_REGEX;
     private static final String MESSAGE_NOT_SENT = "Сообщение не отправлено!";
-    public static final String LOGOUT_COMMAND = "/end";
+    public static final String COMMAND_CHANGE_NICK = "/nick ";
+    private static final String CHANGE_NICK_REGEX = "^" + COMMAND_CHANGE_NICK + NICK_REGEX;
+    public static final String COMMAND_LOGOUT = "/end";
     private static final String SERVER_DISCONNECTED = "Связь с сервером окончена/потеряна.";
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
     private static final String COLON = ": ";
@@ -41,11 +43,11 @@ public class ChatHelper {
     }
 
     public static String getLoginCommand(String login, String password) {
-        return LOGIN_COMMAND + SPACE + login + SPACE + password;
+        return COMMAND_LOGIN + SPACE + login + SPACE + password;
     }
 
     public static boolean isAuthorizeCommand(String message) {
-        return message != null && message.startsWith(LOGIN_COMMAND);
+        return message != null && message.startsWith(COMMAND_LOGIN);
     }
 
     private static String[] getPartsIfCommand(String commandRegex, int partsCount, String message) {
@@ -78,7 +80,7 @@ public class ChatHelper {
     }
 
     public static String getClientsListId() {
-        return CLIENTS_LIST;
+        return COMMAND_CLIENTS_LIST;
     }
 
     public static String[] getClientsIfClientsList(String message) {
@@ -90,7 +92,7 @@ public class ChatHelper {
     }
 
     public static String getPrivateMessageCommand(String toNick) {
-        return PRIVATE_MESSAGE_PREFIX + toNick + SPACE;
+        return COMMAND_PRIVATE_MESSAGE + toNick + SPACE;
     }
 
     public static String[] getPartsIfPrivateMessageCommand(String message) {
@@ -106,8 +108,16 @@ public class ChatHelper {
         }
     }
 
+    public static boolean isChangeNickCommand(String message) {
+        return message != null && message.startsWith(COMMAND_CHANGE_NICK);
+    }
+
+    public static String[] getPartsIfChangeNickCommand(String message) {
+        return getPartsIfCommand(CHANGE_NICK_REGEX, 1, message);
+    }
+
     public static boolean isLogoutCommand(String message) {
-        return message != null && message.startsWith(LOGOUT_COMMAND);
+        return message != null && message.startsWith(COMMAND_LOGOUT);
     }
 
     public static String getServerDisconnectedMessage() {
