@@ -9,7 +9,7 @@
 <?import javafx.scene.control.ListView?>
 
 <HBox xmlns:fx="http://javafx.com/fxml" xmlns="http://javafx.com/javafx/17.0.2-ea"
-      fx:controller="ru.khusyainov.gb.java3.hw2.client.ChatController" stylesheets="styles.css">
+      fx:controller="ru.khusyainov.gb.java3.hw3.client.ChatController" stylesheets="styles.css">
     <VBox HBox.hgrow="ALWAYS">
         <HBox fx:id="loginPanel">
             <TextField fx:id="loginField" onAction="#login" promptText="Введите логин" HBox.hgrow="ALWAYS"/>
