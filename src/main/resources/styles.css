@@ -1,0 +1,15 @@
+.button {
+    -fx-font: bold 16 Arial;
+}
+.text-area {
+    -fx-font: bold 16 Arial;
+}
+.text-field {
+    -fx-font: bold 16 Arial;
+}
+.password-field {
+    -fx-font: bold 16 Arial;
+}
+.list-cell {
+    -fx-font: bold 16 Arial;
+}
