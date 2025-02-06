@@ -9,15 +9,20 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MyServer {
     private static final String CLIENT_CONNECTED_NOT_AUTHORIZED = "Клиент подключился, ждём авторизации.";
     private final String SERVER_ERROR = "Ошибка в работе сервера";
     private List<ClientHandler> clients;
     private AuthService authService;
+    private ServerSocket serverSocket;
+    private ExecutorService service;
 
     public MyServer() {
-        try (ServerSocket serverSocket = new ServerSocket(ChatHelper.SERVER_PORT)) {
+        try {
+            serverSocket = new ServerSocket(ChatHelper.SERVER_PORT);
             authService = new SQLiteAuthService();
             authService.start();
             clients = new LinkedList<>();
@@ -30,9 +35,22 @@ public class MyServer {
         } catch (IOException e) {
             System.err.println(ChatHelper.addTime(SERVER_ERROR + ":1 " + e));
         }
-        if (authService != null) {
-            authService.stop();
+    }
+
+    private void connectionWait() {
+        System.out.println(ChatHelper.addTime("Ждём подключения новых клиентов..."));
+        Socket socket;
+        try {
+            socket = serverSocket.accept();
+            System.out.println(ChatHelper.addTime(CLIENT_CONNECTED_NOT_AUTHORIZED));
+            new ClientHandler(this, socket);
+        } catch (IOException e) {
+            System.err.println(ChatHelper.addTime(SERVER_ERROR + ":1 " + e));
         }
+    }
+
+    public ExecutorService getExecutorService() {
+        return service;
     }
 
     public AuthService getAuthService() {
@@ -86,6 +104,7 @@ public class MyServer {
         if (clients.isEmpty()) {
             System.out.println(ChatHelper.addTime("Все клиенты отключились."));
         }
+        service.execute(this::connectionWait);
     }
 
     public synchronized void broadcastClientsList() {

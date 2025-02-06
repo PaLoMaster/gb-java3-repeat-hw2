@@ -23,15 +23,15 @@ public class ClientHandler {
             serverSocket.setSoTimeout(120000);
             fromClientIn = new Scanner(serverSocket.getInputStream());
             toClientOut = new PrintStream(serverSocket.getOutputStream());
-            new Thread(() -> {
+            myServer.getExecutorService().execute(() -> {
                 try {
                     authenticate();
                     readAndSendMessages();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    closeConnection();
                 }
-                closeConnection();
-            }).start();
+            });
         } catch (IOException e) {
             e.printStackTrace();
             closeConnection();
