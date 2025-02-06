@@ -1,5 +1,7 @@
 package ru.khusyainov.gb.java3.hw3;
 
+import ru.khusyainov.gb.java3.hw2.Client;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -17,7 +19,8 @@ public class ChatHelper {
     private static final String LOGIN_COMMAND_REGEX =
             "^" + COMMAND_LOGIN + SPACE_REGEX + LOGIN_REGEX + SPACE_REGEX + PASSWORD_REGEX;
     private static final String AUTHORIZED_STATUS = COMMAND_LOGIN + "ok";
-    private static final String AUTHORIZED_STATUS_REGEX = AUTHORIZED_STATUS + SPACE_REGEX + NICK_REGEX;
+    private static final String AUTHORIZED_STATUS_REGEX = AUTHORIZED_STATUS + SPACE_REGEX + LOGIN_REGEX +
+            SPACE_REGEX + NICK_REGEX;
     private static final String COMMAND_CLIENTS_LIST = "/clients";
     private static final String CLIENTS_LIST_REGEX = COMMAND_CLIENTS_LIST + SPACE_REGEX + NICK_REGEX +
             "(" + SPACE_REGEX + NICK_REGEX + ")*";
@@ -70,13 +73,13 @@ public class ChatHelper {
         return getPartsIfCommand(LOGIN_COMMAND_REGEX, 2, message);
     }
 
-    public static String getAuthorizedStatus(String nick) {
-        return AUTHORIZED_STATUS + SPACE + nick;
+    public static String getAuthorizedStatus(String login, String nick) {
+        return AUTHORIZED_STATUS + SPACE + login + SPACE + nick;
     }
 
-    public static String getNickIfAuthorizedStatus(String message) {
-        String[] nick = getPartsIfCommand(AUTHORIZED_STATUS_REGEX, 1, message);
-        return nick == null ? null : nick[0];
+    public static Client getClientIfAuthorizedStatus(String message) {
+        String[] parts = getPartsIfCommand(AUTHORIZED_STATUS_REGEX, 2, message);
+        return parts == null ? null : new Client(parts[0], null, parts[1]);
     }
 
     public static String getClientsListId() {

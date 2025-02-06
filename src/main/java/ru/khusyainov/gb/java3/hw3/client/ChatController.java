@@ -10,10 +10,10 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
+import ru.khusyainov.gb.java3.hw2.Client;
 import ru.khusyainov.gb.java3.hw3.ChatHelper;
 
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +40,7 @@ public class ChatController implements Initializable {
     private PrintStream toServerOut;
     private Thread fromServerThread;
     private ObservableList<String> clientsList;
-    private String nick;
+    private Client client;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -56,7 +56,7 @@ public class ChatController implements Initializable {
                     protected void updateItem(String item, boolean empty) {
                         super.updateItem(item, empty);
                         if (!empty) {
-                            if (nick != null && nick.equals(item)) {
+                            if (client != null && client.getNick().equals(item)) {
                                 setText(item + " (Я)");
                             } else {
                                 setText(item);
@@ -81,8 +81,8 @@ public class ChatController implements Initializable {
                     String fromServerMessage;
                     while (!Thread.interrupted() && fromServerIn.hasNextLine()) {
                         fromServerMessage = fromServerIn.nextLine();
-                        nick = ChatHelper.getNickIfAuthorizedStatus(fromServerMessage);
-                        if (nick != null) {
+                        client = ChatHelper.getClientIfAuthorizedStatus(fromServerMessage);
+                        if (client != null) {
                             setAuthorized(true);
                             break;
                         }
@@ -90,28 +90,79 @@ public class ChatController implements Initializable {
                     }
                     while (!Thread.interrupted() && fromServerIn.hasNextLine()) {
                         fromServerMessage = fromServerIn.nextLine();
-                        String newNick = ChatHelper.getNickIfAuthorizedStatus(fromServerMessage);
+                        Client newClient = ChatHelper.getClientIfAuthorizedStatus(fromServerMessage);
                         String[] clientsList = ChatHelper.getClientsIfClientsList(fromServerMessage);
-                        if (newNick != null) {
-                            nick = newNick;
-                            history.appendText(fromServerMessage + "\n");
+                        if (newClient != null) {
+                            client = newClient;
+                            saveHistory(fromServerMessage);
                         } else if (clientsList != null) {
                             Platform.runLater(() -> this.clientsList.setAll(clientsList));
                         } else {
-                            history.appendText(fromServerMessage + "\n");
+                            saveHistory(fromServerMessage);
                         }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 history.appendText(ChatHelper.getServerDisconnectedMessage());
-                if (nick != null) {
+                if (client != null) {
                     setAuthorized(false);
                 }
                 serverDisconnect();
             });
             fromServerThread.setDaemon(true);
             fromServerThread.start();
+        }
+    }
+
+    private void loadHistory() {
+        String path = "history_" + client.getLogin() + ".txt";
+        BufferedInputStream allHistory = null;
+        try {
+            if (new File(path).exists()) {
+                allHistory = new BufferedInputStream(new FileInputStream(path));
+                StringBuilder part = new StringBuilder(new String(allHistory.readAllBytes()));
+                if (!part.isEmpty()) {
+                    final int LOAD_ROWS = 100;
+                    int i = part.length();
+                    for (int j = 0; i > 0 && j < LOAD_ROWS; j++) {
+                        i = part.substring(0, i).lastIndexOf("\n");
+                    }
+                    if (i == -1) {
+                        i = 0;
+                    }
+                    history.setText(part.substring(i));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (allHistory != null) {
+                try {
+                    allHistory.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        history.setScrollTop(Double.MAX_VALUE); //https://bugs.openjdk.org/browse/JDK-8189732
+    }
+
+    private void saveHistory(String message) {
+        message += "\n";
+        history.appendText(message);
+        PrintStream allHistory = null;
+        try {
+            allHistory = new PrintStream(new FileOutputStream("history_" + client.getLogin() + ".txt",
+                    true));
+            allHistory.write(message.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (allHistory != null) {
+                allHistory.flush();
+                allHistory.close();
+            }
         }
     }
 
@@ -138,15 +189,19 @@ public class ChatController implements Initializable {
     }
 
     private void setAuthorized(boolean authorized) {
-        Platform.runLater(history::clear);
+        if (authorized) {
+            Platform.runLater(this::loadHistory);
+        } else {
+            Platform.runLater(history::clear);
+        }
         loginPanel.setVisible(!authorized);
         loginPanel.setManaged(!authorized);
         messagePanel.setVisible(authorized);
         messagePanel.setManaged(authorized);
         clientsListView.setVisible(authorized);
         clientsListView.setManaged(authorized);
-        if (!authorized && nick != null) {
-            nick = null;
+        if (!authorized && client != null) {
+            client = null;
         }
     }
 

@@ -38,6 +38,10 @@ public class ClientHandler {
         }
     }
 
+    public String getLogin() {
+        return client == null ? null : client.getLogin();
+    }
+
     public String getNick() {
         return client == null ? null : client.getNick();
     }
@@ -57,11 +61,12 @@ public class ClientHandler {
                     }
                     if (client != null) {
                         if (!myServer.isClientOnline(client.getNick())) {
-                            sendMessageToClient(ChatHelper.getAuthorizedStatus(getNick()));
+                            sendMessageToClient(ChatHelper.getAuthorizedStatus(getLogin(), getNick()));
                             myServer.subscribe(this);
                             serverSocket.setSoTimeout(0);
                             return;
                         } else {
+                            client = null;
                             sendMessageToClient(ChatHelper.addTime("Клиент с таким логином уже в сети."));
                         }
                     } else {
@@ -107,7 +112,7 @@ public class ClientHandler {
                         client.setNick(newNick);
                         myServer.sendMessageToClients(this,
                                 "Клиент " + oldNick + " поменял ник на " + getNick());
-                        sendMessageToClient(ChatHelper.getAuthorizedStatus(getNick()));
+                        sendMessageToClient(ChatHelper.getAuthorizedStatus(getLogin(), getNick()));
                         myServer.broadcastClientsList();
                     }
                 }
