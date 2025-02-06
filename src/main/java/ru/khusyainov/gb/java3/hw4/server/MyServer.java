@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 
 public class MyServer {
     private static final String CLIENT_CONNECTED_NOT_AUTHORIZED = "Клиент подключился, ждём авторизации.";
-    private final String SERVER_ERROR = "Ошибка в работе сервера";
     private List<ClientHandler> clients;
     private AuthService authService;
     private ServerSocket serverSocket;
@@ -26,14 +25,13 @@ public class MyServer {
             authService = new SQLiteAuthService();
             authService.start();
             clients = new LinkedList<>();
-            while (true) {
-                System.out.println(ChatHelper.addTime("Ждём подключения новых клиентов..."));
-                Socket socket = serverSocket.accept();
-                System.out.println(ChatHelper.addTime(CLIENT_CONNECTED_NOT_AUTHORIZED));
-                new ClientHandler(this, socket);
+            int count = 5;
+            service = Executors.newFixedThreadPool(count);
+            for (int i = 0; i < count; i++) {
+                service.execute(this::connectionWait);
             }
         } catch (IOException e) {
-            System.err.println(ChatHelper.addTime(SERVER_ERROR + ":1 " + e));
+            System.err.println(ChatHelper.getExceptionString(e));
         }
     }
 
@@ -45,7 +43,7 @@ public class MyServer {
             System.out.println(ChatHelper.addTime(CLIENT_CONNECTED_NOT_AUTHORIZED));
             new ClientHandler(this, socket);
         } catch (IOException e) {
-            System.err.println(ChatHelper.addTime(SERVER_ERROR + ":1 " + e));
+            System.err.println(ChatHelper.getExceptionString(e));
         }
     }
 
@@ -87,7 +85,7 @@ public class MyServer {
             sendMessageToClients(client, CLIENT_CONNECTED);
             System.out.println(ChatHelper.addTimeToSomeonesMessage(client.getNick(), CLIENT_CONNECTED));
         } else {
-            System.out.println(ChatHelper.addTime(SERVER_ERROR + "!? " + CLIENT_CONNECTED_NOT_AUTHORIZED));
+            System.err.println(ChatHelper.addTime("Ошибка в работе сервера!? " + CLIENT_CONNECTED_NOT_AUTHORIZED));
         }
     }
 

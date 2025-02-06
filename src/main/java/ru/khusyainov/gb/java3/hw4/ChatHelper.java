@@ -4,6 +4,8 @@ import ru.khusyainov.gb.java3.hw2.Client;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ChatHelper {
     public static final String SERVER_HOST = "localhost";
@@ -145,5 +147,10 @@ public class ChatHelper {
 
     public static String addTimeToMyPrivateMessage(String toNick, String message) {
         return addTimeToSomeonesMessage(MY_NAME + SPACE + toNick, message);
+    }
+
+    public static String getExceptionString(Exception e) {
+        return getDateAndTime() + e.getMessage() + "\n" + Arrays.stream(e.getStackTrace()).map(Object::toString)
+                        .collect(Collectors.joining("\n\t"));
     }
 }

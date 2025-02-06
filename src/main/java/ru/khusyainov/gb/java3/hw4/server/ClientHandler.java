@@ -28,12 +28,12 @@ public class ClientHandler {
                     authenticate();
                     readAndSendMessages();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println(ChatHelper.getExceptionString(e));
                     closeConnection();
                 }
             });
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(ChatHelper.getExceptionString(e));
             closeConnection();
         }
     }
@@ -136,7 +136,7 @@ public class ClientHandler {
         try {
             serverSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(ChatHelper.getExceptionString(e));
         }
     }
 
