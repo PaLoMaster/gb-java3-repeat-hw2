@@ -1,6 +1,6 @@
 package ru.khusyainov.gb.java3.hw7.server;
 
-import ru.khusyainov.gb.java3.hw7.Client;
+import ru.khusyainov.gb.java3.hw7.entity.Client;
 import ru.khusyainov.gb.java3.hw4.ChatHelper;
 
 import java.io.IOException;
