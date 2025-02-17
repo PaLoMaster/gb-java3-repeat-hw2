@@ -2,6 +2,7 @@ package ru.khusyainov.gb.java3.hw7.server;
 
 import ru.khusyainov.gb.java3.hw7.entity.Client;
 import ru.khusyainov.gb.java3.hw4.ChatHelper;
+import ru.khusyainov.gb.java3.hw7.repository.ClientRepository;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -108,12 +109,17 @@ public class ClientHandler {
                 if (parts != null) {
                     String oldNick = getNick();
                     String newNick = parts[0];
-                    if (updateNick = myServer.getAuthService().changeNick(client.getLogin(), newNick)) {
-                        client.setNick(newNick);
+                    client.setNick(newNick);
+                    ClientRepository.update(client);
+                    Client updated = ClientRepository.get(client.getId());
+                    if (updated != null && newNick.equals(updated.getNick())) {
                         myServer.sendMessageToClients(this,
                                 "Клиент " + oldNick + " поменял ник на " + getNick());
                         sendMessageToClient(ChatHelper.getAuthorizedStatus(getLogin(), getNick()));
                         myServer.broadcastClientsList();
+                        updateNick = true;
+                    } else {
+                        client.setNick(oldNick);
                     }
                 }
                 if (parts == null || !updateNick) {

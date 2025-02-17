@@ -16,18 +16,6 @@ public class SQLiteAuthService implements AuthService {
     }
 
     @Override
-    public boolean changeNick(String login, String nick) {
-        Client client = ClientRepository.get(login);
-        if (client == null || nick == null) {
-            return false;
-        }
-        client.setNick(nick);
-        ClientRepository.update(client);
-        client = ClientRepository.get(login);
-        return client.getNick().equals(nick);
-    }
-
-    @Override
     public void stop() {
         HibernateUtil.closeSessionFactory();
     }

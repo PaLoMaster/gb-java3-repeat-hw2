@@ -5,6 +5,5 @@ import ru.khusyainov.gb.java3.hw7.entity.Client;
 public interface AuthService {
     void start();
     Client getClientByLoginPassword(String login, String password);
-    boolean changeNick(String login, String nick);
     void stop();
 }
